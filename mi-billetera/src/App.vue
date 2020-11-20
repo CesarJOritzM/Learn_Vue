@@ -51,6 +51,8 @@
 
 <script>
 
+ import firebase from "firebase/app"
+ import "firebase/firestore"
  import '../node_modules/bootstrap/dist/css/bootstrap.css'
  import '../node_modules/font-awesome/css/font-awesome.css' 
  import "./App.css"
