@@ -2,7 +2,7 @@
     <div id='login'>
       <div class='container my-3 border rounded' style='width:350px'>
         <div class='row'>
-          <div class='col-12 text-center'><h3>Ingreso al Sistema</h3></div>
+          <div class='col-12 text-center mt-3 mb-3'><h3>Ingreso al Sistema</h3></div>
         </div>
         <div class="form-group">
             <label for="email" class="cols-sm-2 control-label">Correo Electrónico</label>
@@ -26,8 +26,8 @@
               </div>
             </div>
           </div>
-        <div class="form-group ">
-            <button type="button" class="btn btn-primary" @click="ingresar">Ingresar</button>
+        <div class="form-group row mt-1 mb-1 d-flex justify-content-center">
+            <button type="button" class="btn btn-dark" @click="ingresar">Ingresar</button>
         </div>
       </div>
     </div>
@@ -51,11 +51,11 @@ export default {
         console.log('Ingreso correcto con User: '+response.user.email)
         this.$emit('ingresoCorrecto',response.user.email)
       })
-      .catch((error) => {
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        console.log('Error: '+error.code+' - '+error.message);
-      })
+    //   .catch((error) => {
+    //     var errorCode = error.code;
+    //     var errorMessage = error.message;
+    //     console.log('Error: '+error.code+' - '+error.message);
+    //   })
     }
   }
 }
@@ -69,8 +69,5 @@ export default {
   text-align: left;
   color: #2c3e50;
   margin-top: 60px;
-}
-.usuario_nuevo{
-  text-align: right;
 }
 </style>
