@@ -27,7 +27,7 @@
             </div>
           </div>
         <div class="form-group row mt-1 mb-1 d-flex justify-content-center">
-            <button type="button" class="btn btn-dark" @click="ingresar">Ingresar</button>
+            <button type="button" class="btn btn-dark" v-on:click="ingresar">Ingresar</button>
         </div>
       </div>
     </div>
@@ -51,23 +51,15 @@ export default {
         console.log('Ingreso correcto con User: '+response.user.email)
         this.$emit('ingresoCorrecto',response.user.email)
       })
-    //   .catch((error) => {
-    //     var errorCode = error.code;
-    //     var errorMessage = error.message;
-    //     console.log('Error: '+error.code+' - '+error.message);
-    //   })
+      .catch((error) => {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log('Error: '+errorCode+' - '+errorMessage);
+      })
     }
   }
 }
 </script>
 
 <style>
-  #form {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: left;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
