@@ -29,6 +29,8 @@
         <div class="form-group row mt-1 mb-1 d-flex justify-content-center">
             <button type="button" class="btn btn-dark" v-on:click="ingresar">Ingresar</button>
         </div>
+        <div id="error">
+        </div>
       </div>
     </div>
 </template>
@@ -54,7 +56,10 @@ export default {
       .catch((error) => {
         var errorCode = error.code;
         var errorMessage = error.message;
-        console.log('Error: '+errorCode+' - '+errorMessage);
+        this.correo =  ""
+        this.clave =""
+        document.getElementById("error").innerText ="Usuario o Contraseña invalidos"
+       console.log('Error: '+errorCode+' - '+errorMessage);
       })
     }
   }

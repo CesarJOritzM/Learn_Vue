@@ -28,7 +28,7 @@
             Monto del gasto
           </div>
           <div class='col-2'>
-            <input v-model="montoGasto" type='text'>
+            <input v-model="montoGasto" type='number'>
           </div>
         </div>
         <div class="row mt-1">
@@ -43,7 +43,7 @@
           <div v-if="!showEdit" id="agregar" class="btn btn-dark" v-on:click="manejarClick($event)">
             Agregar
           </div>
-          <div v-else id="actualizar" class="btn btn-dark" v-on:click="manejarClick($event)">
+          <div v-else id="actualizar" class="btn btn-dark" v-on:click="toggleShowComplete(toggleShowEdit(manejarClick($event)))">
             Actualizar
           </div>
         </div>
@@ -104,16 +104,15 @@ export default {
   name: 'app',
   data: function (){
     return {
-      Gastos:[{id:0,nombre:'cama',monto:79400, tipo:"Hogar"},
-              {id:1,nombre:'horno',monto:78000, tipo:"Trabajo"},
-              {id:2,nombre:'toro',monto:63000, tipo:"Hogar"}],
+      Gastos:[],
       nombreGasto:"",
       tipoGasto:"",
       montoGasto:"",
+      id:"",
       showComplete: false,
       showEdit:false,
       logon: false,
-      suma: "10",
+      suma: "",
       coleccion:{}, 
       firebase:'',
       idUsuario:'',
@@ -134,7 +133,7 @@ export default {
                           tipo:this.tipoGasto}
         this.coleccion.add(gastoData)
         .then((docReference) => {
-          this.Gastos.unshift({id:docReference.id, nombre: gastoData.nombre, monto: gastoData.monto, tipo:gastoData.tipo})
+          this.Gastos.unshift({id:docReference.id, nombre: gastoData.nombre, tipo:gastoData.tipo, monto: gastoData.monto,})
         })
         .catch((Error) => {
           alert('No se pudo agregar el Gastos al sistema. Error: '+Error.message)
@@ -143,38 +142,34 @@ export default {
         this.tipoGasto=''
         this.montoGasto=''
       }
-      else if(evento.target.id==='actualizar'){
-        // const actGasto= {nombre:this.nombreGasto,
-        //                   monto:this.montoGasto,
-        //                   tipo:this.tipoGasto}
-        // this.Gastos.
-        this.showEdit = false;
-        this.nombreGasto=''
-        this.tipoGasto=''
-        this.montoGasto=''
+      else if (evento.target.id==='actualizar'){
+        console.log(this.id);
+        console.log(this.Gastos);
       }
     }, 
     ingresoCorrecto: function(usuario) {
         console.log(  'User: '+usuario)
         this.idUsuario=usuario
         this.logon=true
-        this.coleccion = this.db.collection('/Usuarios/'+usuario+'/Gastos')
+        this.coleccion = this.db.collection('/Usuarios/'+usuario+'/Gastos/')
          this.coleccion.get()
          .then((Gastos)=>{
           Gastos.forEach((gasto) => {
-            this.Gastos.push({id:gasto.id, nombre:gasto.data()})
+            this.Gastos.push({id:gasto.id, nombre:gasto.data().nombre, monto:gasto.data().monto, tipo:gasto.data().tipo })
         })
       })
     },
     eliminar: function (gastoID){
-      // this.coleccion.doc(gastoID.id).delete()
+      this.coleccion.doc(gastoID.id).delete()
       this.Gastos.splice(gastoID.indice,1)
     },
-    editar: function (gastoID,) {
+    editar: function (gastoID) {
       this.nombreGasto = this.Gastos[gastoID.indice].nombre
       this.tipoGasto = this.Gastos[gastoID.indice].tipo
       this.montoGasto = this.Gastos[gastoID.indice].monto
-    },
+      this.id = gastoID.id
+      console.log(gastoID.id);
+      }
   },
   components:{
     loginForm,
