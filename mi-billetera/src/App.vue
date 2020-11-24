@@ -6,7 +6,7 @@
           <h1>Lista de Gastos</h1>
         </div>
         <div class="col-1 text-center aling-center">
-          <div class="btn btn-dark mt-2" @click="toggleShowComplete">
+          <div id="mostrar" class="btn btn-dark mt-2" @click="toggleShowComplete">
             <span v-if="!showComplete">+</span>
             <span v-else>...</span>
           </div>
@@ -43,7 +43,7 @@
           <div v-if="!showEdit" id="agregar" class="btn btn-dark" v-on:click="manejarClick($event)">
             Agregar
           </div>
-          <div v-else id="actualizar" class="btn btn-dark" v-on:click="toggleShowComplete(toggleShowEdit(manejarClick($event)))">
+          <div v-else id="actualizar" class="btn btn-dark" v-on:click="toggleShowComplete(manejarClick($event))">
             Actualizar
           </div>
         </div>
@@ -71,14 +71,14 @@
           v-bind:indice='index'
           v-bind:key='index'
           v-on:eliminarGasto='eliminar($event)'
-          v-on:editarGastos='toggleShowComplete(toggleShowEdit(editar($event)))'>
+          v-on:editarGastos='toggleShowEdit(editar($event))'>
     </expenses>
     <div class='row lead border-top rounded font-weight-bold'>
-      <div class='col-6 text-center'>
+      <div class='col-5 text-center'>
         TOTAL
       </div>
-      <div v-bind:text="suma" class='col-6 text-left'>
-        {{suma}}
+      <div v-bind:text="montoTotal" class='col-3 text-center'>
+        {{montoTotal}}
       </div>
     </div>
   </div>
@@ -99,7 +99,11 @@
  import '../node_modules/font-awesome/css/font-awesome.css' 
  import loginForm from "./components/loginForm.vue"
  import expenses from "./components/expenses.vue"
- 
+
+function MaysPrimera(string){
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export default {
   name: 'app',
   data: function (){
@@ -108,11 +112,11 @@ export default {
       nombreGasto:"",
       tipoGasto:"",
       montoGasto:"",
-      id:"",
+      id:{},
       showComplete: false,
       showEdit:false,
       logon: false,
-      suma: "",
+      montoTotal:"" ,
       coleccion:{}, 
       firebase:'',
       idUsuario:'',
@@ -122,18 +126,24 @@ export default {
   methods:{
     toggleShowComplete() {
       this.showComplete = !this.showComplete;
+      this.showEdit=false
+      this.nombreGasto=''
+      this.tipoGasto=''
+      this.montoGasto= ''
+      this.id=''
     },
     toggleShowEdit() {
-      this.showEdit = !this.showEdit;
+      this.showEdit = true
+      this.showComplete = true
     },
     manejarClick: function (evento)  {
       if (evento.target.id==='agregar'){
-        const gastoData = {nombre:this.nombreGasto,
+        const gastoData = {nombre:MaysPrimera(this.nombreGasto),
                           monto:this.montoGasto,
-                          tipo:this.tipoGasto}
+                          tipo:MaysPrimera(this.tipoGasto)}
         this.coleccion.add(gastoData)
         .then((docReference) => {
-          this.Gastos.unshift({id:docReference.id, nombre: gastoData.nombre, tipo:gastoData.tipo, monto: gastoData.monto,})
+          this.Gastos.unshift({id:docReference.id, nombre:gastoData.nombre, tipo:gastoData.tipo, monto: parseFloat(gastoData.monto),})
         })
         .catch((Error) => {
           alert('No se pudo agregar el Gastos al sistema. Error: '+Error.message)
@@ -143,19 +153,40 @@ export default {
         this.montoGasto=''
       }
       else if (evento.target.id==='actualizar'){
-        console.log(this.id);
-        console.log(this.Gastos);
-      }
+        if (this.Gastos[this.id.indice].id === this.id.id){
+          const actData = {nombre:MaysPrimera(this.nombreGasto),
+                           monto:this.montoGasto,
+                           tipo:MaysPrimera(this.tipoGasto)}
+          this.Gastos[this.id.indice].nombre = actData.nombre;
+          this.Gastos[this.id.indice].monto = parseFloat(actData.monto);
+          this.Gastos[this.id.indice].tipo = actData.tipo;
+          this.coleccion.doc(this.id.id).update({
+            monto:this.montoGasto,
+            nombre:this.nombreGasto,
+            tipo:this.tipoGasto
+         }) 
+         .then(function() {
+              console.log("Updated");
+          })
+         .catch((Error) => {
+          alert('No se pudo agregar el Gastos al sistema. Error: '+Error.message)
+        })
+          this.nombreGasto=''
+          this.tipoGasto=''
+          this.montoGasto= ''
+          this.id=''
+        }
+      }   
     }, 
     ingresoCorrecto: function(usuario) {
         console.log(  'User: '+usuario)
         this.idUsuario=usuario
         this.logon=true
-        this.coleccion = this.db.collection('/Usuarios/'+usuario+'/Gastos/')
+        this.coleccion = this.db.collection('/Usuarios/'+this.idUsuario+'/Gastos/')
          this.coleccion.get()
          .then((Gastos)=>{
           Gastos.forEach((gasto) => {
-            this.Gastos.push({id:gasto.id, nombre:gasto.data().nombre, monto:gasto.data().monto, tipo:gasto.data().tipo })
+            this.Gastos.push({id:gasto.id, nombre:gasto.data().nombre, monto:parseFloat(gasto.data().monto), tipo:gasto.data().tipo })
         })
       })
     },
@@ -167,8 +198,7 @@ export default {
       this.nombreGasto = this.Gastos[gastoID.indice].nombre
       this.tipoGasto = this.Gastos[gastoID.indice].tipo
       this.montoGasto = this.Gastos[gastoID.indice].monto
-      this.id = gastoID.id
-      console.log(gastoID.id);
+      this.id = gastoID
       }
   },
   components:{
@@ -189,7 +219,12 @@ export default {
     const settings = {timestampsInSnapshots: true};
     this.db.settings(settings);
     this.firebase = firebase;
+  },
+  updated:function(){
+    var suma = this.Gastos.reduce((sum, value) => ( sum + value.monto ), 0);
+    this.montoTotal = Intl.NumberFormat().format(suma);
   }
+  
 }
 </script>
 
